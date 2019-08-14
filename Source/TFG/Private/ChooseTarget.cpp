@@ -13,7 +13,7 @@ EBTNodeResult::Type UChooseTarget::ExecuteTask(UBehaviorTreeComponent& OwnerComp
     auto pawn = AIcontroller->GetPawn();           //Peón controlado por el controlador
 	auto pathComp = pawn->FindComponentByClass<UPathComponent>();  //componente de ruta del peón
     //Comprobar que la ruta no está vacía
-	if (!ensure(pathComp)) { 
+	if (!ensure(pathComp)) {   //Ensure es una macro especial de Unreal Engine para verificar que se cumple algo. 
         return EBTNodeResult::Failed; 
     }
 	//Evitar rutas vacias
@@ -23,12 +23,13 @@ EBTNodeResult::Type UChooseTarget::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 		UE_LOG(LogTemp, Warning, TEXT("Se necesita añadir puntos a la ruta"));
 		return EBTNodeResult::Failed;
 	}
-
+	//
     //Obtener el siguiente punto de ruta
-    auto bbcomp = OwnerComp.GetBlackboardComponent();
+	//
+	auto bbcomp = OwnerComp.GetBlackboardComponent();
 	int32 index = bbcomp->GetValueAsInt(Index.SelectedKeyName);
-    bbcomp->SetValueAsObject(Target.SelectedKeyName, path[index]);
-
+	bbcomp->SetValueAsObject(Target.SelectedKeyName, path[index]);
+    bbcomp->SetValueAsVector(TargetCoordinates.SelectedKeyName, path[index]->GetActorLocation());
     //Actualizar índices
     int32 next = (index + 1) % path.Num();
     bbcomp->SetValueAsInt(Index.SelectedKeyName, next);

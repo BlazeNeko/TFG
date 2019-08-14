@@ -33,11 +33,14 @@ ATFGPawn::ATFGPawn()
 	TurnSpeed = 50.f;
 	MaxSpeed = 4000.f;
 	MinSpeed = 500.f;
-	CurrentForwardSpeed = 500.f;
+	CurrentForwardSpeed = 000.f;
 }
-/*
+
 void ATFGPawn::Tick(float DeltaSeconds)
 {
+	// Call any parent class Tick implementation
+	Super::Tick(DeltaSeconds);
+
 	const FVector LocalMove = FVector(CurrentForwardSpeed * DeltaSeconds, 0.f, 0.f);
 
 	// Move plan forwards (with sweep so we stop when we collide with things)
@@ -52,9 +55,8 @@ void ATFGPawn::Tick(float DeltaSeconds)
 	// Rotate plane
 	AddActorLocalRotation(DeltaRotation);
 
-	// Call any parent class Tick implementation
-	Super::Tick(DeltaSeconds);
-}*/
+
+}
 
 void ATFGPawn::NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
 {

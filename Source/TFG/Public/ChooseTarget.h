@@ -18,8 +18,10 @@ public:
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
-	struct FBlackboardKeySelector Target;
+		struct FBlackboardKeySelector Target;
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
-	struct FBlackboardKeySelector Index;
+		struct FBlackboardKeySelector TargetCoordinates;
+	UPROPERTY(EditAnywhere, Category = "Blackboard")
+		struct FBlackboardKeySelector Index;
 
 };
