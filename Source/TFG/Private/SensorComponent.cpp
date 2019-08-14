@@ -26,8 +26,8 @@ void USensorComponent::BeginPlay()
 
 	sensorPositionLR.Init(FVector(0.0f, 0.0f, 0.0f), LasersPerArray);
 	sensorPositionUD.Init(FVector(0.0f, 0.0f, 0.0f), LasersPerArray);
-	sensorLR.Init(FHitResult(), LasersPerArray);
-	sensorUD.Init(FHitResult(), LasersPerArray);
+	sensorH.Init(FHitResult(), LasersPerArray);
+	sensorV.Init(FHitResult(), LasersPerArray);
 
 }
 
@@ -138,42 +138,6 @@ void USensorComponent::laserSetupSlerp(FVector actorLocation)
 	}
 }
 
-//Dibuja las lineas de debug de los lásers ya calculados.
-void USensorComponent::debugLines(FVector actorLocation) {
-	
-	if (sensorPositionLR.IsValidIndex(0)) {
-
-		for (auto item : sensorPositionLR) {
-			DrawDebugLine(GetWorld(), actorLocation, item, FColor(135, 0, 145), debugPersistentLines, debugDuration, 0.f, debugLineThickness);
-		}
-
-	} else {
-		UE_LOG(LogTemp, Error, TEXT("Posiciones de los lásers del sensor LeftRight no inicializadas"))
-	}
-
-	if(sensorPositionUD.IsValidIndex(0)){
-
-		for (auto item : sensorPositionUD) {
-			DrawDebugLine(GetWorld(), actorLocation, item, FColor(135, 0, 145), debugPersistentLines, debugDuration, 0.f, debugLineThickness);
-		}
-
-	} else {
-		UE_LOG(LogTemp, Error, TEXT("Posiciones de los lásers del sensor UpDown no inicializadas"))
-
-	}
-	
-	DrawDebugBox(
-		GetWorld(),
-		actorLocation + GetOwner()->GetActorForwardVector() * boxRayDistance / 2.f,
-		FVector(boxRayDistance/2.f, boxRayWidth/2.f, boxRayWidth/2.f),
-		GetOwner()->GetActorForwardVector().ToOrientationQuat(),
-		FColor(0, 255, 0), debugPersistentLines,
-		debugDuration,
-		0,
-		debugLineThickness);
-	//		GetOwner()->GetActorForwardVector() * boxRayDistance/2.f,
-
-}
 
 void USensorComponent::rayCast(FVector actorLocation) {
 
@@ -183,8 +147,8 @@ void USensorComponent::rayCast(FVector actorLocation) {
 	GetWorld()->SweepSingleByObjectType(
 		boxRay,																//FHitResult
 		actorLocation,														//start position of the box ray, FVector
-		GetOwner()->GetActorForwardVector() * boxRayDistance,				//end position of the box ray, FVector
-		GetOwner()->GetActorForwardVector().ToOrientationQuat(),			//Rotation of the box ray, FQuat
+		actorLocation + GetOwner()->GetActorForwardVector() * boxRayDistance,				//end position of the box ray, FVector
+		GetOwner()->GetTransform().GetRotation(),			//Rotation of the box ray, FQuat
 		FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic),    //Filtro de resultados para los rayos (sólo objetos estáticos)
 		shape
 	);
@@ -198,14 +162,14 @@ void USensorComponent::rayCast(FVector actorLocation) {
 
 	for (int32 i = 0; i < LasersPerArray; i++) {
 		GetWorld()->LineTraceSingleByObjectType(
-			sensorLR[i],														//FHitResult
+			sensorH[i],														//FHitResult
 			actorLocation,														//start position of the ray, FVector
 			sensorPositionLR[i],												//end position of the ray, FVector
 			FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic),    //Filtro de resultados para los rayos (sólo objetos estáticos)
 			params																//parámetros definidos previamente
 		);
 		GetWorld()->LineTraceSingleByObjectType(								//FHitResult
-			sensorUD[i],														//start position of the ray, FVector
+			sensorV[i],														//start position of the ray, FVector
 			actorLocation,														//end position of the ray, FVector
 			sensorPositionUD[i],												//Filtro de resultados para los rayos (sólo objetos estáticos)
 			FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic),	//parámetros definidos previamente
@@ -213,8 +177,8 @@ void USensorComponent::rayCast(FVector actorLocation) {
 		);
 
 		if (debug) {
-			AActor* obstacle = sensorLR[i].GetActor();
-			AActor* obstacle2 = sensorUD[i].GetActor();
+			AActor* obstacle = sensorH[i].GetActor();
+			AActor* obstacle2 = sensorV[i].GetActor();
 			if (obstacle) {
 				UE_LOG(LogTemp, Warning, TEXT("LaserLR %d hit: %s"), i, *(obstacle->GetName()))
 			}
@@ -224,4 +188,69 @@ void USensorComponent::rayCast(FVector actorLocation) {
 		}
 	}
 
+}
+
+//Dibuja las lineas de debug de los lásers ya calculados.
+void USensorComponent::debugLines(FVector actorLocation) {
+
+	//Dibujar box ray
+	DrawDebugBox(
+		GetWorld(),																				//Mundo
+		actorLocation + GetOwner()->GetActorForwardVector() * boxRayDistance / 2.f,				//Centro de la caja
+		FVector(boxRayDistance / 2.f, boxRayWidth / 2.f, boxRayWidth / 2.f),							//extensión de la caja desde el centro a cada dirección
+		GetOwner()->GetTransform().GetRotation(),								//Rotación de la caja
+		FColor(0, 255, 0),																		//Color de la caja
+		debugPersistentLines,																	//Líneas persistentes (false por defecto)							
+		debugDuration,																			//Duración de las líneas de la caja
+		0,
+		debugLineThickness);																	//Grosor de las líneas de debug
+
+	//Output box ray
+	AActor* boxHit = boxRay.GetActor();
+	if (boxHit) {
+		UE_LOG(LogTemp, Warning, TEXT("Laser box hit: %s"), *(boxHit->GetName()))
+		DrawDebugLine(GetWorld(), actorLocation, boxRay.Location, FColor::Blue, debugPersistentLines, 1.f, 0.f, debugLineThickness);
+
+	}
+
+	//Dibujar sensor horizontal
+	if (sensorPositionLR.IsValidIndex(0)) {
+
+		for (auto item : sensorPositionLR) {
+			DrawDebugLine(GetWorld(), actorLocation, item, FColor(135, 0, 145), debugPersistentLines, debugDuration, 0.f, debugLineThickness);
+		}
+
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Posiciones de los lásers del sensor horizontal no inicializadas"))
+	}
+
+	//Dibujar sensor vertical
+	if (sensorPositionUD.IsValidIndex(0)) {
+
+		for (auto item : sensorPositionUD) {
+			DrawDebugLine(GetWorld(), actorLocation, item, FColor(135, 0, 145), debugPersistentLines, debugDuration, 0.f, debugLineThickness);
+		}
+
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Posiciones de los lásers del sensor vertical no inicializadas"))
+
+	}
+
+	//Output sensores horizontal y vertical
+	for (int32 i = 0; i < LasersPerArray; i++) {
+
+		AActor* obstacleH = sensorH[i].GetActor();
+		AActor* obstacleV = sensorV[i].GetActor();
+
+		if (obstacleH) {
+			UE_LOG(LogTemp, Warning, TEXT("LaserH %d hit: %s"), i, *(obstacleH->GetName()))
+			DrawDebugLine(GetWorld(), actorLocation, sensorH[i].Location, FColor::Black, debugPersistentLines, 1.f, 0.f, debugLineThickness);
+		}
+		if (obstacleV) {
+			UE_LOG(LogTemp, Warning, TEXT("LaserV %d hit: %s"), i, *(obstacleV->GetName()))
+			DrawDebugLine(GetWorld(), actorLocation, sensorV[i].Location, FColor::White, debugPersistentLines, 1.f, 0.f, debugLineThickness);
+		}
+	}
 }

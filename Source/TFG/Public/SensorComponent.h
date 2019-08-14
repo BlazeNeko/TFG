@@ -60,8 +60,8 @@ private:
 	//Arrays de posiciones de lásers
 	TArray<FVector> sensorPositionLR;
 	TArray<FVector> sensorPositionUD;
-	TArray<FHitResult> sensorLR;
-	TArray<FHitResult> sensorUD;
+	TArray<FHitResult> sensorH;
+	TArray<FHitResult> sensorV;
 	FHitResult boxRay;
 
 	//Calcula los lásers.
