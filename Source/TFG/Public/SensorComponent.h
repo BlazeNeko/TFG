@@ -16,7 +16,28 @@ public:
 	// Sets default values for this component's properties
 	USensorComponent();
 
-protected:
+	//-------------------------------------------------------
+	//-------Resultado de la Detección de obstáculos---------
+	//-------------------------------------------------------
+
+	//Si los obstáculos están muy cerca, es true
+	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance")
+		bool avoid = false;
+	//Vector normal del punto de impacto del láser con el obstáculo más cercano
+	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
+		FVector hitNormal;
+	//Ubicación en World Coordinates del punto de impacto del láser con el obstáculo más cercano
+	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
+		FVector hitLocation;
+	//Sensor que detecta el obstáculo más cercano. H o V (horizontal o vertical)
+	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
+		FString direction = "";
+	//1 = arriba o izquierda, -1 = derecha o abajo
+	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
+		int32 way;
+
+
+protected:																																																																																																																																																																																																																																																																																													
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
@@ -44,25 +65,40 @@ private:
 	//-------Sensor Data---------
 	//---------------------------
 
+	//Distancia mínima a la que se permiten los obstáculos antes de esquivar
+	UPROPERTY(EditAnywhere, Category = "Laser Settings")
+		float threshold = 400;
 	//Número de lásers por cada array de lásers
 	UPROPERTY(EditAnywhere, Category = "Laser Settings")
 		float LasersPerArray = 20;
 	//Distancia de los lásers de los sensores horizontales y verticales
 	UPROPERTY(EditAnywhere, Category = "Laser Settings")
 		float laserDistance = 700;
+	/*
 	//Distancia del láser caja
 	UPROPERTY(EditAnywhere, Category = "Laser Settings")
 		float boxRayDistance = 1000;
 	//Anchura del láser caja
 	UPROPERTY(EditAnywhere, Category = "Laser Settings")
 		float boxRayWidth = 100;
+	*/
+
 
 	//Arrays de posiciones de lásers
 	TArray<FVector> sensorPositionLR;
 	TArray<FVector> sensorPositionUD;
+	//Resultados de los lásers
 	TArray<FHitResult> sensorH;
 	TArray<FHitResult> sensorV;
+	//True si el láser ha detectado obstáculo, false si no
+	TArray<bool> hitsH;
+	TArray<bool> hitsV;
+
+	/*
 	FHitResult boxRay;
+	bool hitBox = false;
+	*/
+
 
 	//Calcula los lásers.
 	//Implementado mediante Vectores y Lerp (interpolación lineal).
@@ -79,5 +115,9 @@ private:
 	//Dibuja las lineas de debug de los lásers ya calculados.
 	void debugLines(FVector actorLocation);
 
+
 	void rayCast(FVector actorLocation);
+
+	void checkRayResult();
+
 };

@@ -22,6 +22,9 @@ public:
 	virtual void NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
 	// End AActor overrides
 
+	/** Current forward speed */
+	UPROPERTY(Category = "Speed", BlueprintReadOnly)
+	float CurrentForwardSpeed;
 protected:
 
 	// Begin APawn overrides
@@ -54,9 +57,6 @@ private:
 	/** Min forward speed */
 	UPROPERTY(Category=Yaw, EditAnywhere)
 	float MinSpeed;
-
-	/** Current forward speed */
-	float CurrentForwardSpeed;
 
 	/** Current yaw speed */
 	float CurrentYawSpeed;
