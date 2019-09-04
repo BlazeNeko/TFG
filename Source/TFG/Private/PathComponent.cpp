@@ -5,4 +5,6 @@
 TArray<AActor*> UPathComponent::getPathArray() const{
 	return pathArray;
 }
-
+void UPathComponent::setPathArray(TArray<AActor*> path) {
+	pathArray = path;
+}

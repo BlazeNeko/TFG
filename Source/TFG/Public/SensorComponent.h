@@ -19,16 +19,19 @@ public:
 	//-------------------------------------------------------
 	//-------Resultado de la Detección de obstáculos---------
 	//-------------------------------------------------------
+	//Sensores horizontal y vertical
 
 	//Si los obstáculos están muy cerca, es true
-	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance")
-		bool avoid = false;
+
 	//Vector normal del punto de impacto del láser con el obstáculo más cercano
 	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
 		FVector hitNormal;
 	//Ubicación en World Coordinates del punto de impacto del láser con el obstáculo más cercano
 	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
 		FVector hitLocation;
+	//Distancia desde el pawn hasta el punto de impacto
+	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
+		float distance;
 	//Sensor que detecta el obstáculo más cercano. H o V (horizontal o vertical)
 	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
 		FString direction = "";
@@ -36,6 +39,22 @@ public:
 	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
 		int32 way;
 
+	//Datos laser caja
+	//Si los obstáculos están muy cerca, es true
+	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
+		bool avoid = false;
+	//Vector normal del punto de impacto del láser con el obstáculo más cercano
+	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
+		FVector frontHitNormal;
+	//Ubicación en World Coordinates del punto de impacto del láser con el obstáculo más cercano
+	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
+		FVector frontHitLocation;
+	//Distancia desde el pawn hasta el punto de impacto
+	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
+		float frontObstacleDistance;
+	//Actor golpeado por el rayo frontal
+	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
+		AActor* boxHitActor;
 
 protected:																																																																																																																																																																																																																																																																																													
 	// Called when the game starts
@@ -67,21 +86,23 @@ private:
 
 	//Distancia mínima a la que se permiten los obstáculos antes de esquivar
 	UPROPERTY(EditAnywhere, Category = "Laser Settings")
-		float threshold = 400;
+		float minDistance = 400;
+	UPROPERTY(EditAnywhere, Category = "Laser Settings")
+		float threshold = 600;
 	//Número de lásers por cada array de lásers
 	UPROPERTY(EditAnywhere, Category = "Laser Settings")
 		float LasersPerArray = 20;
 	//Distancia de los lásers de los sensores horizontales y verticales
 	UPROPERTY(EditAnywhere, Category = "Laser Settings")
 		float laserDistance = 700;
-	/*
+	
 	//Distancia del láser caja
 	UPROPERTY(EditAnywhere, Category = "Laser Settings")
 		float boxRayDistance = 1000;
 	//Anchura del láser caja
 	UPROPERTY(EditAnywhere, Category = "Laser Settings")
 		float boxRayWidth = 100;
-	*/
+	
 
 
 	//Arrays de posiciones de lásers
@@ -94,10 +115,10 @@ private:
 	TArray<bool> hitsH;
 	TArray<bool> hitsV;
 
-	/*
-	FHitResult boxRay;
-	bool hitBox = false;
-	*/
+	//True si el láser caja ha detectado obstáculo, false si no
+	FHitResult boxRayHit;
+	bool boxRayBool = false;
+	
 
 
 	//Calcula los lásers.

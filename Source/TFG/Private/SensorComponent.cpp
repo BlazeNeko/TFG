@@ -4,7 +4,6 @@
 #include "SensorComponent.h"
 #include "GameFramework/Actor.h"
 #include "Runtime/Engine/Public/DrawDebugHelpers.h"
-
 #include "Runtime/Engine/Classes/Engine/World.h"
 
 
@@ -141,6 +140,17 @@ void USensorComponent::laserSetupSlerp(FVector actorLocation)
 //Emite los rayos y obtiene los resultados
 void USensorComponent::rayCast(FVector actorLocation) {
 
+	//Inicialización de la forma del box ray
+	FCollisionShape shape = FCollisionShape::MakeBox(FVector(boxRayWidth, boxRayWidth, boxRayWidth));
+
+	boxRayBool = GetWorld()->SweepSingleByObjectType(
+		boxRayHit,																//FHitResult
+		actorLocation,														//start position of the box ray, FVector
+		actorLocation + GetOwner()->GetActorForwardVector() * boxRayDistance,				//end position of the box ray, FVector
+		GetOwner()->GetTransform().GetRotation(),			//Rotation of the box ray, FQuat
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic),    //Filtro de resultados para los rayos (sólo objetos estáticos)
+		shape
+	);
 
 	//Inicialización de los parámetros del RayCast para los sensores de rayos lineales
 	FCollisionQueryParams params(
@@ -151,7 +161,7 @@ void USensorComponent::rayCast(FVector actorLocation) {
 
 	for (int32 i = 0; i < LasersPerArray; i++) {
 
-		
+
 		hitsH[i] = GetWorld()->LineTraceSingleByObjectType(
 			sensorH[i],														//FHitResult
 			actorLocation,														//start position of the ray, FVector
@@ -166,54 +176,19 @@ void USensorComponent::rayCast(FVector actorLocation) {
 			FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic),	//parámetros definidos previamente
 			params
 		);
-		
+
 	}
-
-	/*
-	//Inicialización de la forma del box ray
-	FCollisionShape shape = FCollisionShape::MakeBox(FVector(boxRayWidth, boxRayWidth, boxRayWidth));
-
-	hitBox = GetWorld()->SweepSingleByObjectType(
-		boxRay,																//FHitResult
-		actorLocation,														//start position of the box ray, FVector
-		actorLocation + GetOwner()->GetActorForwardVector() * boxRayDistance,				//end position of the box ray, FVector
-		GetOwner()->GetTransform().GetRotation(),			//Rotation of the box ray, FQuat
-		FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic),    //Filtro de resultados para los rayos (sólo objetos estáticos)
-		shape
-	);
-	*/
+	
 }
 
 //Dibuja las lineas de debug de los lásers ya calculados.
 void USensorComponent::debugLines(FVector actorLocation) {
 
-	//Dibujar box ray
-	/*
-	DrawDebugBox(
-		GetWorld(),																				//Mundo
-		actorLocation + GetOwner()->GetActorForwardVector() * boxRayDistance / 2.f,				//Centro de la caja
-		FVector(boxRayDistance / 2.f, boxRayWidth / 2.f, boxRayWidth / 2.f),							//extensión de la caja desde el centro a cada dirección
-		GetOwner()->GetTransform().GetRotation(),								//Rotación de la caja
-		FColor(0, 255, 0),																		//Color de la caja
-		debugPersistentLines,																	//Líneas persistentes (false por defecto)							
-		debugDuration,																			//Duración de las líneas de la caja
-		0,
-		debugLineThickness);																	//Grosor de las líneas de debug
-
-	//Output box ray
-	AActor* boxHit = boxRay.GetActor();
-	if (boxHit) {
-		UE_LOG(LogTemp, Warning, TEXT("Laser box hit: %s"), *(boxHit->GetName()))
-		DrawDebugLine(GetWorld(), actorLocation, boxRay.Location, FColor::Blue, debugPersistentLines, 1.f, 0.f, debugLineThickness);
-
-	}
-	*/
-
 	//Dibujar sensor horizontal
 	if (sensorPositionLR.IsValidIndex(0)) {
 
-		for (auto item : sensorPositionLR) {
-			DrawDebugLine(GetWorld(), actorLocation, item, FColor(135, 0, 145), debugPersistentLines, debugDuration, 0.f, debugLineThickness);
+		for (int32 i = 0; i < LasersPerArray; i++) {
+			DrawDebugLine(GetWorld(), actorLocation, sensorPositionLR[i], FColor(135, 0, 145), debugPersistentLines, debugDuration, 0.f, debugLineThickness);
 		}
 
 	}
@@ -224,8 +199,8 @@ void USensorComponent::debugLines(FVector actorLocation) {
 	//Dibujar sensor vertical
 	if (sensorPositionUD.IsValidIndex(0)) {
 
-		for (auto item : sensorPositionUD) {
-			DrawDebugLine(GetWorld(), actorLocation, item, FColor(135, 0, 145), debugPersistentLines, debugDuration, 0.f, debugLineThickness);
+		for (int32 i = 0; i < LasersPerArray; i++) {
+			DrawDebugLine(GetWorld(), actorLocation, sensorPositionUD[i], FColor(135, 0, 145), debugPersistentLines, debugDuration, 0.f, debugLineThickness);
 		}
 
 	}
@@ -233,7 +208,7 @@ void USensorComponent::debugLines(FVector actorLocation) {
 		UE_LOG(LogTemp, Error, TEXT("Posiciones de los lásers del sensor vertical no inicializadas"))
 
 	}
-
+	/*
 	//Output sensores horizontal y vertical
 	for (int32 i = 0; i < LasersPerArray; i++) {
 
@@ -249,51 +224,90 @@ void USensorComponent::debugLines(FVector actorLocation) {
 			DrawDebugLine(GetWorld(), actorLocation, sensorV[i].Location, FColor::White, debugPersistentLines, 1.f, 0.f, debugLineThickness);
 		}
 	}
+	*/
+	//Dibujar box ray
+
+	DrawDebugBox(
+		GetWorld(),																				//Mundo
+		actorLocation + GetOwner()->GetActorForwardVector() * boxRayDistance / 2.f,				//Centro de la caja
+		FVector(boxRayDistance / 2.f, boxRayWidth / 2.f, boxRayWidth / 2.f),							//extensión de la caja desde el centro a cada dirección
+		GetOwner()->GetTransform().GetRotation(),								//Rotación de la caja
+		FColor(0, 255, 0),																		//Color de la caja
+		debugPersistentLines,																	//Líneas persistentes (false por defecto)
+		debugDuration,																			//Duración de las líneas de la caja
+		0,
+		debugLineThickness);																	//Grosor de las líneas de debug
+
+	//Output box ray
+
+	/*
+	if (boxHitActor) {
+		UE_LOG(LogTemp, Warning, TEXT("Laser box hit: %s"), *(boxHit->GetName()))
+		DrawDebugLine(GetWorld(), actorLocation, boxRayHit.Location, FColor::Blue, debugPersistentLines, 1.f, 0.f, debugLineThickness);
+
+	}
+	*/
 }
 
 //Analiza los resultados de los rayos
 void USensorComponent::checkRayResult() {
 
-	float nearestDistance = laserDistance;
-	direction = "";
-	//Si distancia obstaculo < threshold, esquivar obstáculo
-	for (int32 i = 0; i < LasersPerArray; i++) {
-		if (sensorH[i].Distance < threshold && hitsH[i] == true) {
-			if (sensorH[i].Distance < nearestDistance) {
-				nearestDistance = sensorH[i].Distance;
-				hitNormal = sensorH[i].ImpactNormal;
-				hitLocation = sensorH[i].ImpactPoint;
-				direction = "H";
-				if (i < LasersPerArray / 2)
-					way = 1;
-				else
-					way = -1;
-
-			}
-		}
-		if (sensorV[i].Distance < threshold && hitsV[i] == true) {
-			if (sensorV[i].Distance < nearestDistance) {
-				nearestDistance = sensorV[i].Distance;
-				hitNormal = sensorV[i].ImpactNormal;
-				hitLocation = sensorV[i].ImpactPoint;
-				direction = "V";
-				if (i < LasersPerArray / 2)
-					way = 1;
-				else
-					way = -1;
-			}
-		}
+	//if se ha detectado un obstáculo de frente
+	if (boxRayBool) {
+		//if el obstáculo detectado está a una distancia menor a la distancia mínima para sortearlo
+		if (boxRayHit.Distance < minDistance)
+			boxHitActor = boxRayHit.GetActor();
+			frontHitNormal = boxRayHit.ImpactNormal;
+			frontHitLocation = boxRayHit.ImpactPoint;
+			avoid = true;
 	}
-	if (nearestDistance <= threshold)
-		avoid = true;
-	else
-		avoid = false;
+
+	if (avoid) {
+		float nearestDistance = laserDistance;
+		direction = "";
+
+		//Si distancia obstaculo < threshold, esquivar obstáculo
+		for (int32 i = 0; i < LasersPerArray; i++) {
+			if (sensorH[i].Distance < threshold && hitsH[i] == true && sensorH[i].GetActor() == boxHitActor) {
+				if (sensorH[i].Distance < nearestDistance) {
+					nearestDistance = sensorH[i].Distance;
+					hitNormal = sensorH[i].ImpactNormal;
+					hitLocation = sensorH[i].ImpactPoint;
+
+					//Get direction of the laser closest to the obstacle to avoid
+					direction = "H";
+					if (i < LasersPerArray / 2)
+						way = 1;
+					else
+						way = -1;
+				}
+			}
+
+			if (sensorV[i].Distance < threshold && hitsV[i] == true && sensorV[i].GetActor() == boxHitActor) {
+				if (sensorV[i].Distance < nearestDistance) {
+					nearestDistance = sensorV[i].Distance;
+					hitNormal = sensorV[i].ImpactNormal;
+					hitLocation = sensorV[i].ImpactPoint;
+
+					//Get direction of the laser closest to the obstacle to avoid
+					direction = "V";
+					if (i < LasersPerArray / 2)
+						way = 1;
+					else
+						way = -1;
+				}
+			}
+		}
+		//UE_LOG(LogTemp, Warning, TEXT("Distancia del obstáculo más cercano: %f"), nearestDistance)
+		if(nearestDistance > threshold)
+			avoid = false;
+
+		//UE_LOG(LogTemp, Warning, TEXT("Dirección del obstáculo más cercano: %s"), *direction)
+	}
 
 
 	UE_LOG(LogTemp, Warning, TEXT("Avoid: %s"), (avoid ? TEXT("True") : TEXT("False")))
-	UE_LOG(LogTemp, Warning, TEXT("Distancia del obstáculo más cercano: %f"), nearestDistance)
 
-	UE_LOG(LogTemp, Warning, TEXT("Dirección del obstáculo más cercano: %s"),*direction)
 
 
 

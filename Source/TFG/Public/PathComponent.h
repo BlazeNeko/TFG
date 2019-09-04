@@ -13,6 +13,8 @@ class TFG_API UPathComponent : public UActorComponent
 
 public:	
 	TArray<AActor*> getPathArray() const;
+
+	void setPathArray(TArray<AActor*> path);
 private:
 	UPROPERTY(EditInstanceOnly, Category = "Path")
 	TArray<AActor*> pathArray;
