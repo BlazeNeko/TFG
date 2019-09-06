@@ -42,7 +42,7 @@ public:
 	//Datos laser caja
 	//Si los obstáculos están muy cerca, es true
 	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
-		bool avoid = false;
+		bool avoid;
 	//Vector normal del punto de impacto del láser con el obstáculo más cercano
 	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
 		FVector frontHitNormal;

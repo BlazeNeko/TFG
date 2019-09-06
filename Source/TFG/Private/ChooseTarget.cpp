@@ -34,5 +34,8 @@ EBTNodeResult::Type UChooseTarget::ExecuteTask(UBehaviorTreeComponent& OwnerComp
     int32 next = (index + 1) % path.Num();
     bbcomp->SetValueAsInt(Index.SelectedKeyName, next);
 
+	//cambiar IsOnTarget a False
+	bbcomp->SetValueAsBool(IsOnTarget.SelectedKeyName, false);
+
 	return EBTNodeResult::Succeeded;
 }

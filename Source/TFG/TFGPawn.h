@@ -23,14 +23,19 @@ public:
 	// Begin AActor overrides
 	virtual void Tick(float DeltaSeconds) override;
 	// End AActor overrides
-
-	/** Current forward speed */
-	UPROPERTY(Category = "Speed", BlueprintReadOnly)
-	float CurrentForwardSpeed;
-
+	/** Rotation speed */
+	UPROPERTY(Category = "Speed", EditAnywhere)
+	float Speed = 300;
+	/** Rotation speed */
+	UPROPERTY(Category = "Speed", EditAnywhere)
+	float RotationSpeed = 10;
 
 public:
 	/** Returns PlaneMesh subobject **/
 	FORCEINLINE class UStaticMeshComponent* GetPlaneMesh() const { return PlaneMesh; }
 
+	//Gira el peón hacia la dirección del vector de dirección
+	void rotateTowardsDirection(FVector Direction);
+	//Mueve el peón hacia la dirección del vector de dirección
+	void moveToDirection(FVector Direction);
 };

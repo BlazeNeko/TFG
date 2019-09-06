@@ -23,5 +23,7 @@ protected:
 		struct FBlackboardKeySelector TargetCoordinates;
 	UPROPERTY(EditAnywhere, Category = "Blackboard")
 		struct FBlackboardKeySelector Index;
+	UPROPERTY(EditAnywhere, Category = "Blackboard")
+		struct FBlackboardKeySelector IsOnTarget;
 
 };

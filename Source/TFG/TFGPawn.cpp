@@ -35,3 +35,34 @@ void ATFGPawn::Tick(float DeltaSeconds)
 	Super::Tick(DeltaSeconds);
 
 }
+
+//Gira el peón hacia la dirección del vector de dirección
+void ATFGPawn::rotateTowardsDirection(FVector Direction)
+{
+	//Interpolar la rotación inicial y la objetivo según la velocidad de rotación del pawn
+	FRotator rotation = FMath::RInterpTo
+	(
+		PlaneMesh->GetComponentTransform().GetRotation().Rotator()  //Rotator del pawn
+		, Direction.ToOrientationRotator(),							//Rotator del vector de dirección
+		GetWorld()->DeltaTimeSeconds,								//Deltatime
+		RotationSpeed												//Velocidad de rotación
+	);
+	//Establecer la nueva rotación
+	PlaneMesh->SetRelativeRotation(rotation);
+}
+
+//Mueve el peón hacia la dirección del vector de dirección
+void ATFGPawn::moveToDirection(FVector Direction)
+{
+	//Obtener DeltaSeconds
+	float deltaSeconds = GetWorld()->DeltaTimeSeconds;
+
+	//Calcular la nueva posición
+	Direction.Normalize();
+	FVector distance =  Direction * Speed * deltaSeconds;
+	FVector newPosition = PlaneMesh->GetComponentTransform().GetLocation() + distance;
+
+	//Establecer la nueva transformación del peón
+	//PlaneMesh->SetWorldTransform(FTransform(PlaneMesh->GetComponentTransform().GetRotation(), newPosition, PlaneMesh->GetComponentTransform().GetScale3D()));
+	AddMovementInput(Direction, Speed *deltaSeconds, false);
+}

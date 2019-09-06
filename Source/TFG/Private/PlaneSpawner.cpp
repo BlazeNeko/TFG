@@ -3,6 +3,7 @@
 
 #include "PlaneSpawner.h"
 #include "PathComponent.h"
+#include "FormationComponent.h"
 #include "TFGPawn.h"
 
 
@@ -24,12 +25,26 @@ void APlaneSpawner::BeginPlay()
 	auto path = FindComponentByClass<UPathComponent>()->getPathArray();
 
 	for (int i = 0; i < numPlanes; i++) {
+		//Calculate the position of each plane
 		FRotator rotation = FRotator(0, i * angle, 0);
 		FVector pos = rotation.Vector() * formationRadius;
+
+
+
+		//Spawn the planes
 		FActorSpawnParameters params = FActorSpawnParameters();
 		ATFGPawn* player = GetWorld()->SpawnActor<ATFGPawn>(spawnableBlueprint.Get(), FTransform(GetActorLocation() + pos), params);
+
+		//Adding each spawned unit to the formation
+		UFormationComponent::addPawnToFormation(player);
+		FVector leaderOffset = pos - FRotator(0, 0, 0).Vector() * formationRadius;
+		UFormationComponent::addFormationOffsets(leaderOffset);
+
+		//Initializing each plane's path
 		auto actorPath = player->FindComponentByClass<UPathComponent>();
-		actorPath->setPathArray(path);
+		if (ensure(actorPath)) {
+			actorPath->setPathArray(path);
+		}
 	}
 
 }
