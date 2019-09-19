@@ -52,17 +52,17 @@ void ATFGPawn::rotateTowardsDirection(FVector Direction)
 }
 
 //Mueve el peón hacia la dirección del vector de dirección
-void ATFGPawn::moveToDirection(FVector Direction)
+void ATFGPawn::moveToDirection(FVector Direction, float speedMultiplier)
 {
 	//Obtener DeltaSeconds
 	float deltaSeconds = GetWorld()->DeltaTimeSeconds;
 
 	//Calcular la nueva posición
 	Direction.Normalize();
-	FVector distance =  Direction * Speed * deltaSeconds;
+	FVector distance =  Direction * Speed * speedMultiplier * deltaSeconds;
 	FVector newPosition = PlaneMesh->GetComponentTransform().GetLocation() + distance;
 
 	//Establecer la nueva transformación del peón
 	//PlaneMesh->SetWorldTransform(FTransform(PlaneMesh->GetComponentTransform().GetRotation(), newPosition, PlaneMesh->GetComponentTransform().GetScale3D()));
-	AddMovementInput(Direction, Speed *deltaSeconds, false);
+	AddMovementInput(Direction, Speed *speedMultiplier * deltaSeconds, false);
 }

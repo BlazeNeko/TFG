@@ -55,10 +55,13 @@ void USensorComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	checkRayResult();
 }
 
-//Calcula los lásers.
+//Calcula los lásers de los sensores horizontal y vertical.
 //Implementado mediante Vectores y Lerp (interpolación lineal).
 //Funciona independientemente de la rotación del actor. 
 void USensorComponent::laserSetupLerp(FVector actorLocation) {
+
+	AActor* owner = GetOwner();
+	UFormationComponent* formation = GetOwner()->FindComponentByClass<UFormationComponent>();
 
 	//Vector normalizado hacia la dirección a la que mira el actor
 	FVector actorForwardVector = GetOwner()->GetActorForwardVector();
@@ -141,6 +144,9 @@ void USensorComponent::laserSetupSlerp(FVector actorLocation)
 //Emite los rayos y obtiene los resultados
 void USensorComponent::rayCast(FVector actorLocation) {
 
+	AActor* owner = GetOwner();
+	UFormationComponent* formation = GetOwner()->FindComponentByClass<UFormationComponent>();
+
 	//Inicialización de la forma del box ray
 	FCollisionShape shape = FCollisionShape::MakeBox(FVector(boxRayWidth, boxRayWidth, boxRayWidth));
 
@@ -153,8 +159,6 @@ void USensorComponent::rayCast(FVector actorLocation) {
 		shape
 	);
 
-	AActor* owner = GetOwner();
-	UFormationComponent* formation = GetOwner()->FindComponentByClass<UFormationComponent>();
 	if (owner == formation->getPawnsInFormation()[0]) {//If the owner is the leader of the formation
 		if (avoid || boxRayBool) {
 			//Inicialización de los parámetros del RayCast para los sensores de rayos lineales
@@ -189,29 +193,34 @@ void USensorComponent::rayCast(FVector actorLocation) {
 //Dibuja las lineas de debug de los lásers ya calculados.
 void USensorComponent::debugLines(FVector actorLocation) {
 
-	//Dibujar sensor horizontal
-	if (sensorPositionLR.IsValidIndex(0)) {
+	AActor* owner = GetOwner();
+	UFormationComponent* formation = GetOwner()->FindComponentByClass<UFormationComponent>();
 
-		for (int32 i = 0; i < LasersPerArray; i++) {
-			DrawDebugLine(GetWorld(), actorLocation, sensorPositionLR[i], FColor(135, 0, 145), debugPersistentLines, debugDuration, 0.f, debugLineThickness);
+	if (owner == formation->getPawnsInFormation()[0]) {
+		//Dibujar sensor horizontal
+		if (sensorPositionLR.IsValidIndex(0)) {
+
+			for (int32 i = 0; i < LasersPerArray; i++) {
+				DrawDebugLine(GetWorld(), actorLocation, sensorPositionLR[i], FColor(135, 0, 145), debugPersistentLines, debugDuration, 0.f, debugLineThickness);
+			}
+
+		}
+		else {
+			UE_LOG(LogTemp, Error, TEXT("Posiciones de los lásers del sensor horizontal no inicializadas"))
 		}
 
-	}
-	else {
-		UE_LOG(LogTemp, Error, TEXT("Posiciones de los lásers del sensor horizontal no inicializadas"))
-	}
+		//Dibujar sensor vertical
+		if (sensorPositionUD.IsValidIndex(0)) {
 
-	//Dibujar sensor vertical
-	if (sensorPositionUD.IsValidIndex(0)) {
+			for (int32 i = 0; i < LasersPerArray; i++) {
+				DrawDebugLine(GetWorld(), actorLocation, sensorPositionUD[i], FColor(135, 0, 145), debugPersistentLines, debugDuration, 0.f, debugLineThickness);
+			}
 
-		for (int32 i = 0; i < LasersPerArray; i++) {
-			DrawDebugLine(GetWorld(), actorLocation, sensorPositionUD[i], FColor(135, 0, 145), debugPersistentLines, debugDuration, 0.f, debugLineThickness);
 		}
+		else {
+			UE_LOG(LogTemp, Error, TEXT("Posiciones de los lásers del sensor vertical no inicializadas"))
 
-	}
-	else {
-		UE_LOG(LogTemp, Error, TEXT("Posiciones de los lásers del sensor vertical no inicializadas"))
-
+		}
 	}
 	/*
 	//Output sensores horizontal y vertical
@@ -258,18 +267,20 @@ void USensorComponent::debugLines(FVector actorLocation) {
 //Analiza los resultados de los rayos
 void USensorComponent::checkRayResult() {
 
+	AActor* owner = GetOwner();
+	UFormationComponent* formation = GetOwner()->FindComponentByClass<UFormationComponent>();
+
+
 	//if se ha detectado un obstáculo de frente
 	if (boxRayBool) {
 		//if el obstáculo detectado está a una distancia menor a la distancia mínima para sortearlo
-		if (boxRayHit.Distance < minDistance)
+		if (boxRayHit.Distance < minDistance )
 			boxHitActor = boxRayHit.GetActor();
 			frontHitNormal = boxRayHit.ImpactNormal;
 			frontHitLocation = boxRayHit.ImpactPoint;
 			avoid = true;
 	}
 
-	AActor* owner = GetOwner();
-	UFormationComponent *formation = GetOwner()->FindComponentByClass<UFormationComponent>();
 	if(owner == formation->getPawnsInFormation()[0]) {//If the owner is the leader of the formation
 		if (avoid) {
 			float nearestDistance = laserDistance;

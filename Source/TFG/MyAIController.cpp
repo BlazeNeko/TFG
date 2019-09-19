@@ -11,10 +11,10 @@
 void AMyAIController::calcDirectionToTarget(FBlackboardKeySelector TargetCoordinates, FBlackboardKeySelector MovementDirection) {
 
 	auto pawn = GetPawn();           //Pe�n controlado por el controlador
+	auto bbcomp = GetBlackboardComponent();
 
 
 	//Calculamos la direcci�n a seguir
-	auto bbcomp = GetBlackboardComponent();
 	FVector goal = bbcomp->GetValueAsVector(TargetCoordinates.SelectedKeyName);
 	FVector direction = goal - pawn->GetTransform().GetLocation();
 
@@ -25,8 +25,9 @@ void AMyAIController::calcDirectionToTarget(FBlackboardKeySelector TargetCoordin
 bool AMyAIController::calcAvoidingMovementDirection(FBlackboardKeySelector MovementDirection) {
 
 	auto pawn = GetPawn();           //Pe�n controlado por el controlador
+	auto sensorComp = pawn->FindComponentByClass<USensorComponent>();  //componente de sensor del pe�n
+	auto bbcomp = GetBlackboardComponent();
 
-	auto sensorComp = pawn->FindComponentByClass<USensorComponent>();  //componente de ruta del pe�n
 
 	if (!ensure(sensorComp)) {   //Ensure es una macro especial de Unreal Engine para verificar que se cumple algo. 
 		return false;
@@ -49,16 +50,42 @@ bool AMyAIController::calcAvoidingMovementDirection(FBlackboardKeySelector Movem
 	}
 
 	//Guardamos resultado en la pizarra
-	auto bbcomp = GetBlackboardComponent();
 	bbcomp->SetValueAsVector(MovementDirection.SelectedKeyName, directionVector);
 
 	return true;
 }
 
+bool AMyAIController::calcFormationAvoidingMovementDirection(FBlackboardKeySelector FormationAvoidPosition, FBlackboardKeySelector MovementDirection) {
+
+	auto pawn = GetPawn();           //Pe�n controlado por el controlador
+	auto formationComp = pawn->FindComponentByClass<UFormationComponent>();  //componente de formación del pe�n
+	auto bbcomp = GetBlackboardComponent();
+
+	if (!ensure(formationComp)) {   //Ensure es una macro especial de Unreal Engine para verificar que se cumple algo. 
+		return false;
+	}
+	//Leemos los datos relevantes del componente de formación
+	float threshold = formationComp->avoidanceThreshold;  
+	int32 positionNumber = formationComp->getPawnsInFormation().Find(pawn);
+	AActor* pawnToFollow = formationComp->getPawnsInFormation()[positionNumber - 1];
+
+	//Calculamos la dirección necesaria para evitar el obstáculo. Prod vectorial entre upVector o rightVector y normalVector = dirección para evitar el obstáculo
+	FVector direction;
+	FVector targetLocation = pawnToFollow->GetTransform().GetLocation() + 			   //Posición del pawnToFollow + backwards vector del pawnToFollow * threshold * positionNumber
+							pawnToFollow->GetActorForwardVector() * (-1) * threshold;
+
+	direction =  targetLocation - pawn->GetTransform().GetLocation();
+	//Guardamos resultado en la pizarra
+	bbcomp->SetValueAsVector(MovementDirection.SelectedKeyName, direction);
+	bbcomp->SetValueAsVector(FormationAvoidPosition.SelectedKeyName, targetLocation);
+
+	return true;
+}
 bool AMyAIController::calcDirectionToFormationPos(FBlackboardKeySelector Leader, FBlackboardKeySelector FormationPosition, FBlackboardKeySelector MovementDirection) {
 
 	auto pawn = GetPawn();           //Pe�n controlado por el controlador
-	auto formationComp = pawn->FindComponentByClass<UFormationComponent>();  //componente de ruta del pe�n
+	auto formationComp = pawn->FindComponentByClass<UFormationComponent>();  //componente de formación del pe�n
+	auto bbcomp = GetBlackboardComponent();
 
 	if (!ensure(formationComp)) {   //Ensure es una macro especial de Unreal Engine para verificar que se cumple algo. 
 		return false;
@@ -70,7 +97,6 @@ bool AMyAIController::calcDirectionToFormationPos(FBlackboardKeySelector Leader,
 	FVector offset = formationOffsets[formationPositions.Find(pawn)];
 
 	//Calculamos la direcci�n a seguir
-	auto bbcomp = GetBlackboardComponent();
 	AActor* formationLeader = (AActor*)bbcomp->GetValueAsObject(Leader.SelectedKeyName);   //Líder de la formación
 	FVector targetLocation = formationLeader->GetTransform().GetLocation() + 			   //Posición del líder + offset de la posición
 								formationLeader->GetTransform().GetRotation().RotateVector(offset);	//rotamos el offset según la rotación del líder
@@ -86,10 +112,10 @@ bool AMyAIController::calcDirectionToFormationPos(FBlackboardKeySelector Leader,
 	return true;
 }
 
-void AMyAIController::movePawnToDirection(FVector Direction)
+void AMyAIController::movePawnToDirection(FVector Direction, float speedMultiplier)
 {
 	ATFGPawn *pawn = (ATFGPawn *) GetPawn();
-	pawn->moveToDirection(Direction);
+	pawn->moveToDirection(Direction, speedMultiplier);
 }
 
 void AMyAIController::rotatePawnToDirection(FVector Direction)

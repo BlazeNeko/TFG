@@ -17,7 +17,7 @@ EBTNodeResult::Type UMoveToTarget::ExecuteTask(UBehaviorTreeComponent& OwnerComp
 	//Aplicar movimiento y rotación
 	FVector direction = AIcontroller->GetBlackboardComponent()->GetValueAsVector(MovementDirection.SelectedKeyName);
 	AIcontroller->rotatePawnToDirection(direction);
-	AIcontroller->movePawnToDirection(direction);
+	AIcontroller->movePawnToDirection(direction, 1);
 	return EBTNodeResult::Type();
 }
 

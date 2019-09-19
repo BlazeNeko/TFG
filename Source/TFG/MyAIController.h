@@ -21,9 +21,11 @@ public:
 
 	bool calcAvoidingMovementDirection(FBlackboardKeySelector MovementDirection);
 
+	bool calcFormationAvoidingMovementDirection(FBlackboardKeySelector FormationAvoidPosition, FBlackboardKeySelector MovementDirection);
+
 	bool calcDirectionToFormationPos(FBlackboardKeySelector Leader, FBlackboardKeySelector FormationPosition, FBlackboardKeySelector MovementDirection);
 
-	void movePawnToDirection(FVector Direction);
+	void movePawnToDirection(FVector Direction, float speedMultiplier);
 
 	void rotatePawnToDirection(FVector Direction);
 };

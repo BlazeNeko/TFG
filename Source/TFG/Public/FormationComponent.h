@@ -42,6 +42,13 @@ public:
 
 	static void destroyPawnsInFormation();
 
+	
+	UPROPERTY(Category = "Formation", EditAnywhere)
+		float avoidanceThreshold = 200;
+	UPROPERTY(Category = "Formation", EditAnywhere)
+		float radius = 300;
+	UPROPERTY(Category = "Formation", EditAnywhere)
+		int32 numPawns = 4;
 
 protected:
 	// Called when the game starts

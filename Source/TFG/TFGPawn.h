@@ -37,5 +37,5 @@ public:
 	//Gira el peón hacia la dirección del vector de dirección
 	void rotateTowardsDirection(FVector Direction);
 	//Mueve el peón hacia la dirección del vector de dirección
-	void moveToDirection(FVector Direction);
+	void moveToDirection(FVector Direction, float speedMultiplier);
 };
