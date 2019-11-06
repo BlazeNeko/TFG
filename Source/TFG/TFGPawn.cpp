@@ -4,8 +4,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "Components/InputComponent.h"
-#include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/FloatingPawnMovement.h"
 #include "Engine/World.h"
 #include "Engine/StaticMesh.h"
 
@@ -57,12 +56,14 @@ void ATFGPawn::moveToDirection(FVector Direction, float speedMultiplier)
 	//Obtener DeltaSeconds
 	float deltaSeconds = GetWorld()->DeltaTimeSeconds;
 
-	//Calcular la nueva posición
-	Direction.Normalize();
-	FVector distance =  Direction * Speed * speedMultiplier * deltaSeconds;
-	FVector newPosition = PlaneMesh->GetComponentTransform().GetLocation() + distance;
+	UE_LOG(LogTemp, Warning, TEXT("SpeedMultiplier: %f"), speedMultiplier)
+		//Establecer la nueva transformación del peón
 
-	//Establecer la nueva transformación del peón
-	//PlaneMesh->SetWorldTransform(FTransform(PlaneMesh->GetComponentTransform().GetRotation(), newPosition, PlaneMesh->GetComponentTransform().GetScale3D()));
-	AddMovementInput(Direction, Speed *speedMultiplier * deltaSeconds, false);
+	auto movementComp = FindComponentByClass<UFloatingPawnMovement>();
+	if (movementComp) {
+		movementComp->MaxSpeed = Speed * speedMultiplier;
+		AddMovementInput(Direction, 1, true);
+
+	}
+	
 }

@@ -71,7 +71,7 @@ bool AMyAIController::calcFormationAvoidingMovementDirection(FBlackboardKeySelec
 
 	//Calculamos la dirección necesaria para evitar el obstáculo. Prod vectorial entre upVector o rightVector y normalVector = dirección para evitar el obstáculo
 	FVector direction;
-	FVector targetLocation = pawnToFollow->GetTransform().GetLocation() + 			   //Posición del pawnToFollow + backwards vector del pawnToFollow * threshold * positionNumber
+	FVector targetLocation = pawnToFollow->GetTransform().GetLocation() + 			   //Posición del pawnToFollow + backwards vector del pawnToFollow * threshold 
 							pawnToFollow->GetActorForwardVector() * (-1) * threshold;
 
 	direction =  targetLocation - pawn->GetTransform().GetLocation();

@@ -24,9 +24,15 @@ void APlaneSpawner::BeginPlay()
 	float angle = (float)360 / numPlanes;
 	auto path = FindComponentByClass<UPathComponent>()->getPathArray();
 
-	for (int i = 0; i < numPlanes; i++) {
+	for (int i = 1; i <= numPlanes; i++) {
 		//Calculate the position of each plane
-		FRotator rotation = FRotator(0, i * angle, 0);
+		int aux = i % 2;
+		FRotator rotation;
+		if (aux == 0)
+			rotation = FRotator(0, i/2 * angle * -1, 0);
+		else
+			rotation = FRotator(0, i / 2 * angle , 0);
+
 		FVector pos = rotation.Vector() * formationRadius;
 
 

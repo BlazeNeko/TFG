@@ -32,7 +32,7 @@ public:
 	//Distancia desde el pawn hasta el punto de impacto
 	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
 		float distance;
-	//Sensor que detecta el obstáculo más cercano. H o V (horizontal o vertical)
+	//Indica qué detecta el obstáculo más cercano. H o V (horizontal o vertical)
 	UPROPERTY(BlueprintReadOnly, Category = "Obstacle Avoidance Result")
 		FString direction = "";
 	//1 = arriba o izquierda, -1 = derecha o abajo
@@ -124,9 +124,10 @@ private:
 	//Calcula los lásers.
 	//Implementado mediante Vectores y Lerp (interpolación lineal).
 	//Funciona independientemente de la rotación del actor. 
-	//Tiene la desventaja de que los lásers calculados mediante la interpolación son más cortos al ser lineal.
 	void laserSetupLerp(FVector actorLocation);
 
+
+	//DEPRECATED
 	//Calcula los lásers
 	//Implementación mediante Quaternions y Slerp (interpolación esférica).
 	//Funciona sólo si el actor rota exclusivamente sobre el eje Z (yaw rotation). Si rota sobre los ejes X(roll) o Y (pitch), los cálculos con los quaternions no son correctos.

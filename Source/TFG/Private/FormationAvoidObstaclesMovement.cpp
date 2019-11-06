@@ -26,8 +26,9 @@ EBTNodeResult::Type UFormationAvoidObstaclesMovement::ExecuteTask(UBehaviorTreeC
 
 	float speedMultiplier = 1;
 	//If distancia del pawn respecto a la posición que debe alcanzar en la formación > 150, se aplica un speed multiplier
-	if (FVector::Distance(AIcontroller->GetPawn()->GetTransform().GetLocation(), AIcontroller->GetBlackboardComponent()->GetValueAsVector(FormationAvoidPosition.SelectedKeyName)) > 150)
-		speedMultiplier = 1.5;
+	if (FVector::Distance(AIcontroller->GetPawn()->GetTransform().GetLocation(), position) > 100) {
+		speedMultiplier = 2;
+	}
 
 	//Aplicar movimiento y rotación
 

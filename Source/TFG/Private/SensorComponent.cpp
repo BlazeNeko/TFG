@@ -39,58 +39,57 @@ void USensorComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	//Vector de posición del actor que posee al componente.
+	//Vector de posiciï¿½n del actor que posee al componente.
 	FVector actorLocation = GetOwner()->GetTransform().GetLocation();
 
-	//Inicialización de los sensores
+	//Inicializaciï¿½n de los sensores
 	laserSetupLerp(actorLocation);
-
 	//Raycast
 	rayCast(actorLocation);
 	// Debug Lines
 	if (debug)
 		debugLines(actorLocation);
 
-	//Comprobar si los rayos han detectado obstáculos y la distancia de estos
+	//Comprobar si los rayos han detectado obstï¿½culos y la distancia de estos
 	checkRayResult();
 }
 
-//Calcula los lásers de los sensores horizontal y vertical.
-//Implementado mediante Vectores y Lerp (interpolación lineal).
-//Funciona independientemente de la rotación del actor. 
+//Calcula los lï¿½sers de los sensores horizontal y vertical.
+//Implementado mediante Vectores y Lerp (interpolaciï¿½n lineal).
+//Funciona independientemente de la rotaciï¿½n del actor. 
 void USensorComponent::laserSetupLerp(FVector actorLocation) {
 
 	AActor* owner = GetOwner();
 	UFormationComponent* formation = GetOwner()->FindComponentByClass<UFormationComponent>();
 
-	//Vector normalizado hacia la dirección a la que mira el actor
+	//Vector normalizado hacia la direcciï¿½n a la que mira el actor
 	FVector actorForwardVector = GetOwner()->GetActorForwardVector();
-	//Vector normalizado hacia la derecha respecto a la dirección a la que mira el actor
+	//Vector normalizado hacia la derecha respecto a la direcciï¿½n a la que mira el actor
 	FVector actorLeftVector = -GetOwner()->GetActorRightVector();
-	//Vector normalizado hacia la izquierda respecto a la dirección a la que mira el actor
+	//Vector normalizado hacia la izquierda respecto a la direcciï¿½n a la que mira el actor
 	FVector actorRightVector = GetOwner()->GetActorRightVector();
-	//Vector normalizado hacia la derecha respecto a la dirección a la que mira el actor
+	//Vector normalizado hacia la derecha respecto a la direcciï¿½n a la que mira el actor
 	FVector actorUpVector = GetOwner()->GetActorUpVector();
-	//Vector normalizado hacia la izquierda respecto a la dirección a la que mira el actor
+	//Vector normalizado hacia la izquierda respecto a la direcciï¿½n a la que mira el actor
 	FVector actorDownVector = -GetOwner()->GetActorUpVector();
 
 
 	float spaceBetweenLasers = 180.0f / (LasersPerArray - 1.f);
 	FVector laserTargetLR, laserTargetUD;
 	for (int32 i = 0; i < LasersPerArray; i++) {
-		//Cálculo de alpha.
+		//Cï¿½lculo de alpha.
 		float alpha = FMath::Clamp((i * spaceBetweenLasers / 180.f * 2), 0.f, 2.f);
 
 		if (alpha <= 1) {
-			//Efectúa una interpolación lineal entre los vectores "izquierda" y "delante" relativos al actor, en base a alpha
+			//Efectï¿½a una interpolaciï¿½n lineal entre los vectores "izquierda" y "delante" relativos al actor, en base a alpha
 			laserTargetLR = FMath::Lerp(actorLeftVector, actorForwardVector, alpha);
-			//Efectúa una interpolación lineal entre los vectores "arriba" y "delante" relativos al actor, en base a alpha
+			//Efectï¿½a una interpolaciï¿½n lineal entre los vectores "arriba" y "delante" relativos al actor, en base a alpha
 			laserTargetUD = FMath::Lerp(actorUpVector, actorForwardVector, alpha);
 		}
 		else {
-			//Efectúa una interpolación lineal entre los vectores "delante" y "derecha" relativos al actor, en base a alpha
+			//Efectï¿½a una interpolaciï¿½n lineal entre los vectores "delante" y "derecha" relativos al actor, en base a alpha
 			laserTargetLR = FMath::Lerp(actorForwardVector, actorRightVector, alpha - 1);
-			//Efectúa una interpolación lineal entre los vectores "delante" y "abajo" relativos al actor, en base a alpha
+			//Efectï¿½a una interpolaciï¿½n lineal entre los vectores "delante" y "abajo" relativos al actor, en base a alpha
 			laserTargetUD = FMath::Lerp(actorForwardVector, actorDownVector, alpha - 1);
 		}
 		sensorPositionLR[i] = actorLocation + laserTargetLR * laserDistance * laserDistance /(laserTargetLR * laserDistance).Size();
@@ -99,41 +98,41 @@ void USensorComponent::laserSetupLerp(FVector actorLocation) {
 	}
 }
 
-//Calcula los lásers
-//Implementación mediante Quaternions y Slerp (interpolación esférica).
-//Funciona sólo si el actor rota exclusivamente sobre el eje Z (yaw rotation). Si rota sobre los ejes X(roll) o Y (pitch), los cálculos con los quaternions no son correctos.
-//Todos los lásers tienen la misma longitud debido a que se calculan mediante la interpolación esférica.
+//Calcula los lï¿½sers
+//Implementaciï¿½n mediante Quaternions y Slerp (interpolaciï¿½n esfï¿½rica).
+//Funciona sï¿½lo si el actor rota exclusivamente sobre el eje Z (yaw rotation). Si rota sobre los ejes X(roll) o Y (pitch), los cï¿½lculos con los quaternions no son correctos.
+//Todos los lï¿½sers tienen la misma longitud debido a que se calculan mediante la interpolaciï¿½n esfï¿½rica.
 void USensorComponent::laserSetupSlerp(FVector actorLocation)
 {
 
-	//Quaternion normalizado hacia la dirección a la que mira el actor
+	//Quaternion normalizado hacia la direcciï¿½n a la que mira el actor
 	FQuat actorForwardQuaternion = GetOwner()->GetActorForwardVector().ToOrientationQuat();
-	//Quaternions normalizados hacia la izquierda y derecha respecto a la dirección a la que mira el actor
+	//Quaternions normalizados hacia la izquierda y derecha respecto a la direcciï¿½n a la que mira el actor
 	FQuat actorLeftQuaternion = (-GetOwner()->GetActorRightVector()).ToOrientationQuat();
-	//Quaternion normalizado hacia la derecha respecto a la dirección a la que mira el actor
+	//Quaternion normalizado hacia la derecha respecto a la direcciï¿½n a la que mira el actor
 	FQuat actorRightQuaternion = GetOwner()->GetActorRightVector().ToOrientationQuat();
-	//Quaternion normalizado hacia arriba respecto a la dirección a la que mira el actor
+	//Quaternion normalizado hacia arriba respecto a la direcciï¿½n a la que mira el actor
 	FQuat actorUpQuaternion = GetOwner()->GetActorUpVector().ToOrientationQuat();
-	//Quaternion normalizado hacia abajo respecto a la dirección a la que mira el actor
+	//Quaternion normalizado hacia abajo respecto a la direcciï¿½n a la que mira el actor
 	FQuat actorDownQuaternion = (-GetOwner()->GetActorUpVector()).ToOrientationQuat();
 
 	FVector laserTargetLR, laserTargetUD;
 
 	float spaceBetweenLasers = 180.0f / (LasersPerArray - 1.f);
 	for (int32 i = 0; i < LasersPerArray; i++) {
-		//Cálculo de alpha.
+		//Cï¿½lculo de alpha.
 		float alpha = FMath::Clamp((i * spaceBetweenLasers / 90.f), 0.f, 2.f);
 
 		if (alpha <= 1) {
-			//Efectúa una interpolación esférica entre los quaternions "izquierda" y "delante" relativos al actor, en base a alpha
+			//Efectï¿½a una interpolaciï¿½n esfï¿½rica entre los quaternions "izquierda" y "delante" relativos al actor, en base a alpha
 			laserTargetLR = FQuat::Slerp(actorLeftQuaternion, actorForwardQuaternion, alpha).Vector();
-			//Efectúa una interpolación esférica entre los quaternions "Arriba" y "delante" relativos al actor, en base a alpha
+			//Efectï¿½a una interpolaciï¿½n esfï¿½rica entre los quaternions "Arriba" y "delante" relativos al actor, en base a alpha
 			laserTargetUD = FQuat::Slerp(actorUpQuaternion, actorForwardQuaternion, alpha).Vector();
 		}
 		else {
-			//Efectúa una interpolación esférica entre los quaternions "delante" y "derecha" relativos al actor, en base a alpha
+			//Efectï¿½a una interpolaciï¿½n esfï¿½rica entre los quaternions "delante" y "derecha" relativos al actor, en base a alpha
 			laserTargetLR = FQuat::Slerp(actorForwardQuaternion, actorRightQuaternion, alpha - 1).Vector();
-			//Efectúa una interpolación esférica entre los quaternions "delante" y "Abajo" relativos al actor, en base a alpha
+			//Efectï¿½a una interpolaciï¿½n esfï¿½rica entre los quaternions "delante" y "Abajo" relativos al actor, en base a alpha
 			laserTargetUD = FQuat::Slerp(actorForwardQuaternion, actorDownQuaternion, alpha - 1).Vector();
 		}
 		sensorPositionLR[i] = actorLocation + laserTargetLR * laserDistance;
@@ -147,7 +146,7 @@ void USensorComponent::rayCast(FVector actorLocation) {
 	AActor* owner = GetOwner();
 	UFormationComponent* formation = GetOwner()->FindComponentByClass<UFormationComponent>();
 
-	//Inicialización de la forma del box ray
+	//Inicializaciï¿½n de la forma del box ray
 	FCollisionShape shape = FCollisionShape::MakeBox(FVector(boxRayWidth, boxRayWidth, boxRayWidth));
 
 	boxRayBool = GetWorld()->SweepSingleByObjectType(
@@ -155,13 +154,13 @@ void USensorComponent::rayCast(FVector actorLocation) {
 		actorLocation,														//start position of the box ray, FVector
 		actorLocation + GetOwner()->GetActorForwardVector() * boxRayDistance,				//end position of the box ray, FVector
 		GetOwner()->GetTransform().GetRotation(),			//Rotation of the box ray, FQuat
-		FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic),    //Filtro de resultados para los rayos (sólo objetos estáticos)
+		FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic),    //Filtro de resultados para los rayos (sï¿½lo objetos estï¿½ticos)
 		shape
 	);
 
 	if (owner == formation->getPawnsInFormation()[0]) {//If the owner is the leader of the formation
 		if (avoid || boxRayBool) {
-			//Inicialización de los parámetros del RayCast para los sensores de rayos lineales
+			//Inicializaciï¿½n de los parï¿½metros del RayCast para los sensores de rayos lineales
 			FCollisionQueryParams params(
 				FName(TEXT("")),				//trace tag
 				false,							//false == trazas simples (simplifica los mesh con los que impactan los rayos). True = trazas complejas (no simplifica los mesh)
@@ -174,14 +173,14 @@ void USensorComponent::rayCast(FVector actorLocation) {
 					sensorH[i],														//FHitResult
 					actorLocation,														//start position of the ray, FVector
 					sensorPositionLR[i],												//end position of the ray, FVector
-					FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic),    //Filtro de resultados para los rayos (sólo objetos estáticos)
-					params																//parámetros definidos previamente
+					FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic),    //Filtro de resultados para los rayos (sï¿½lo objetos estï¿½ticos)
+					params																//parï¿½metros definidos previamente
 				);
 				hitsV[i] = GetWorld()->LineTraceSingleByObjectType(								//FHitResult
 					sensorV[i],														//start position of the ray, FVector
 					actorLocation,														//end position of the ray, FVector
-					sensorPositionUD[i],												//Filtro de resultados para los rayos (sólo objetos estáticos)
-					FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic),	//parámetros definidos previamente
+					sensorPositionUD[i],												//Filtro de resultados para los rayos (sï¿½lo objetos estï¿½ticos)
+					FCollisionObjectQueryParams(ECollisionChannel::ECC_WorldStatic),	//parï¿½metros definidos previamente
 					params
 				);
 
@@ -190,7 +189,7 @@ void USensorComponent::rayCast(FVector actorLocation) {
 	}
 }
 
-//Dibuja las lineas de debug de los lásers ya calculados.
+//Dibuja las lineas de debug de los lï¿½sers ya calculados.
 void USensorComponent::debugLines(FVector actorLocation) {
 
 	AActor* owner = GetOwner();
@@ -206,7 +205,7 @@ void USensorComponent::debugLines(FVector actorLocation) {
 
 		}
 		else {
-			UE_LOG(LogTemp, Error, TEXT("Posiciones de los lásers del sensor horizontal no inicializadas"))
+			UE_LOG(LogTemp, Error, TEXT("Posiciones de los lï¿½sers del sensor horizontal no inicializadas"))
 		}
 
 		//Dibujar sensor vertical
@@ -218,7 +217,7 @@ void USensorComponent::debugLines(FVector actorLocation) {
 
 		}
 		else {
-			UE_LOG(LogTemp, Error, TEXT("Posiciones de los lásers del sensor vertical no inicializadas"))
+			UE_LOG(LogTemp, Error, TEXT("Posiciones de los lï¿½sers del sensor vertical no inicializadas"))
 
 		}
 	}
@@ -244,13 +243,13 @@ void USensorComponent::debugLines(FVector actorLocation) {
 	DrawDebugBox(
 		GetWorld(),																				//Mundo
 		actorLocation + GetOwner()->GetActorForwardVector() * boxRayDistance / 2.f,				//Centro de la caja
-		FVector(boxRayDistance / 2.f, boxRayWidth / 2.f, boxRayWidth / 2.f),							//extensión de la caja desde el centro a cada dirección
-		GetOwner()->GetTransform().GetRotation(),								//Rotación de la caja
+		FVector(boxRayDistance / 2.f, boxRayWidth / 2.f, boxRayWidth / 2.f),							//extensiï¿½n de la caja desde el centro a cada direcciï¿½n
+		GetOwner()->GetTransform().GetRotation(),								//Rotaciï¿½n de la caja
 		FColor(0, 255, 0),																		//Color de la caja
-		debugPersistentLines,																	//Líneas persistentes (false por defecto)
-		debugDuration,																			//Duración de las líneas de la caja
+		debugPersistentLines,																	//Lï¿½neas persistentes (false por defecto)
+		debugDuration,																			//Duraciï¿½n de las lï¿½neas de la caja
 		0,
-		debugLineThickness);																	//Grosor de las líneas de debug
+		debugLineThickness);																	//Grosor de las lï¿½neas de debug
 
 	//Output box ray
 	/*
@@ -271,9 +270,9 @@ void USensorComponent::checkRayResult() {
 	UFormationComponent* formation = GetOwner()->FindComponentByClass<UFormationComponent>();
 
 
-	//if se ha detectado un obstáculo de frente
+	//if se ha detectado un obstï¿½culo de frente
 	if (boxRayBool) {
-		//if el obstáculo detectado está a una distancia menor a la distancia mínima para sortearlo
+		//if el obstï¿½culo detectado estï¿½ a una distancia menor a la distancia mï¿½nima para sortearlo
 		if (boxRayHit.Distance < minDistance )
 			boxHitActor = boxRayHit.GetActor();
 			frontHitNormal = boxRayHit.ImpactNormal;
@@ -286,7 +285,7 @@ void USensorComponent::checkRayResult() {
 			float nearestDistance = laserDistance;
 			direction = "";
 
-			//Si distancia obstaculo < threshold, esquivar obstáculo
+			//Si distancia obstaculo < threshold, esquivar obstï¿½culo
 			for (int32 i = 0; i < LasersPerArray; i++) {
 				if (sensorH[i].Distance < threshold && hitsH[i] == true && sensorH[i].GetActor() == boxHitActor) {
 					if (sensorH[i].Distance < nearestDistance) {
@@ -318,11 +317,11 @@ void USensorComponent::checkRayResult() {
 					}
 				}
 			}
-			//UE_LOG(LogTemp, Warning, TEXT("Distancia del obstáculo más cercano: %f"), nearestDistance)
+			//UE_LOG(LogTemp, Warning, TEXT("Distancia del obstï¿½culo mï¿½s cercano: %f"), nearestDistance)
 			if (nearestDistance > threshold) {
 					avoid = false;
 			}
-			//UE_LOG(LogTemp, Warning, TEXT("Dirección del obstáculo más cercano: %s"), *direction)
+			//UE_LOG(LogTemp, Warning, TEXT("Direcciï¿½n del obstï¿½culo mï¿½s cercano: %s"), *direction)
 		}
 	}
 
